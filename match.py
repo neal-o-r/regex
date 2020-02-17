@@ -1,7 +1,7 @@
-from typing import List
+from typing import List, Generator
 
 
-def zip_left(a: str, b: str) -> tuple:
+def zip_left(a: str, b: str) -> Generator[tuple, None, None]:
     """
     zip to the length of left arg,
     padding right arg with None
