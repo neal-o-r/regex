@@ -28,7 +28,7 @@ def suffixes(text: str) -> List[str]:
     return [text[i:] for i in range(len(text))]
 
 
-def expand_star(regex: str, text: str) -> str:
+def expand_star(regex: str, text: str) -> Generator[str, None, None]:
     """
     re-write a regex, replacing * with .'s
     """
@@ -52,8 +52,8 @@ def match(regex: str, text: str) -> bool:
     elif regex.startswith("^"):
         # if it starts with an anchor, check if matches here
         return match_here(regex[1:], text)
-    # do we have any matches?
-    return any(match_here(regex, t) for t in suffixes(text))
+    else:
+        return any(match_here(regex, t) for t in suffixes(text))
 
 
 def test():
