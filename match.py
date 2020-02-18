@@ -28,13 +28,14 @@ def suffixes(text: str) -> List[str]:
     return [text[i:] for i in range(len(text))]
 
 
-def expand_star(regex: str, text: str) -> str:
+def expand_star(regex: str, text: str) -> Generator[str, None, None]:
     """
     re-write a regex, replacing * with .'s
     """
     front, back = regex.split("*")
-    dots = "." * (1 + len(text) - len(regex))
-    return front + dots + back
+    n = 2 + (len(text) - len(regex))
+    for i in range(n):
+        yield f"{front}{'.'*i}{back}"
 
 
 def match_here(regex: str, text: str) -> bool:
@@ -51,7 +52,7 @@ def match(regex: str, text: str) -> bool:
 
     if "*" in regex:
         # expand a star, if there is one
-        return match(expand_star(regex, text), text)
+        return any(match(exp, text) for exp in expand_star(regex, text))
     elif regex.startswith("^"):
         # if it starts with an anchor, check if matches here
         return match_here(regex[1:], text)
@@ -67,3 +68,4 @@ def test():
     assert not match("1235", "123")
     assert match("*34", "1234")
     assert not match("13*", "1234")
+    assert match("12*3", "1234")
