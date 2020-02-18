@@ -46,18 +46,14 @@ def match_here(regex: str, text: str) -> bool:
 
 
 def match(regex: str, text: str) -> bool:
-    # a null or a * regex matches everything
-    if regex is "" or regex is "*":
-        return True
-
     if "*" in regex:
         # expand a star, if there is one
         return any(match(exp, text) for exp in expand_star(regex, text))
     elif regex.startswith("^"):
         # if it starts with an anchor, check if matches here
         return match_here(regex[1:], text)
-    # do we have any matches?
-    return any(match_here(regex, t) for t in suffixes(text))
+    else:
+        return any(match_here(regex, t) for t in suffixes(text))
 
 
 def test():
