@@ -6,9 +6,10 @@ def zip_left(a: str, b: str) -> Generator[tuple, None, None]:
     zip to the length of left arg,
     padding right arg with None
     """
-    diff = len(a) - len(b)
-    for ai, bi in zip(a, list(b) + [None] * diff):
-        yield ai, bi
+    if len(a) <= len(b):
+        return zip(a, b)
+    else:
+        return zip_longest(a, b)
 
 
 def eq(r: str, t: str) -> bool:
@@ -21,11 +22,11 @@ def eq(r: str, t: str) -> bool:
         or ((r is "$") and (t is None)) # end anchor
     )
 
-def suffixes(text: str) -> List[str]:
+def suffixes(text: str) -> Generator[str, None, None]:
     """
     get all suffixes of a string
     """
-    return [text[i:] for i in range(len(text))]
+    return (text[i:] for i in range(len(text)))
 
 
 def expand_star(regex: str, text: str) -> Generator[str, None, None]:
