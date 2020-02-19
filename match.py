@@ -1,4 +1,5 @@
 from typing import List, Generator
+from itertools import zip_longest
 
 
 def zip_left(a: str, b: str) -> Generator[tuple, None, None]:
@@ -6,9 +7,10 @@ def zip_left(a: str, b: str) -> Generator[tuple, None, None]:
     zip to the length of left arg,
     padding right arg with None
     """
-    diff = len(a) - len(b)
-    for ai, bi in zip(a, list(b) + [None] * diff):
-        yield ai, bi
+    if len(a) <= len(b):
+        return zip(a, b)
+    else:
+        return zip_longest(a, b)
 
 
 def eq(r: str, t: str) -> bool:
@@ -18,14 +20,15 @@ def eq(r: str, t: str) -> bool:
     return (
         (r == t)  # chars match
         or (r is ".")  # wild card char
-        or ((r is "$") and (t is None)) # end anchor
+        or ((r is "$") and (t is None))  # end anchor
     )
 
-def suffixes(text: str) -> List[str]:
+
+def suffixes(text: str) -> Generator[str, None, None]:
     """
     get all suffixes of a string
     """
-    return [text[i:] for i in range(len(text))]
+    return (text[i:] for i in range(len(text)))
 
 
 def expand_star(regex: str, text: str) -> Generator[str, None, None]:
@@ -35,7 +38,7 @@ def expand_star(regex: str, text: str) -> Generator[str, None, None]:
     front, back = regex.split("*")
     n = 2 + (len(text) - len(regex))
     for i in range(n):
-        yield f"{front}{'.'*i}{back}"
+        yield f"{front}{'.' * i}{back}"
 
 
 def match_here(regex: str, text: str) -> bool:
@@ -53,6 +56,7 @@ def match(regex: str, text: str) -> bool:
         # if it starts with an anchor, check if matches here
         return match_here(regex[1:], text)
     else:
+        # otherwise check all the suffixes
         return any(match_here(regex, t) for t in suffixes(text))
 
 
