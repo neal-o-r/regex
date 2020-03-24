@@ -23,10 +23,7 @@ def eq(r: str, t: str) -> bool:
         or ((r is "$") and (t is None))  # end anchor
     )
 
-<<<<<<< HEAD
 
-=======
->>>>>>> ca64cf54b8c08b39ef6307a84212c0cff4cd3f03
 def suffixes(text: str) -> Generator[str, None, None]:
     """
     get all suffixes of a string
