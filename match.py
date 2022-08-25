@@ -1,63 +1,57 @@
-from typing import List, Generator
-from itertools import zip_longest
+Char  = str
+Regex = str
+Text  = str
+
+def slices(text: Text):
+    """
+    take a text, and return steps through the text like:
+    text, ext, xt, t
+    """
+    yield text
+    for i in range(len(text) + 1):
+        yield text[i+1:]
 
 
-def zip_left(a: str, b: str) -> Generator[tuple, None, None]:
+
+def match(regexp: Regex, text: Text) -> bool:
     """
-    zip to the length of left arg,
-    padding right arg with None
+    Match reports whether regexp matches anywhere in text
     """
-    if len(a) <= len(b):
-        return zip(a, b)
+    if regexp != "" and regexp[0] == "^":
+        return matchhere(regexp[1:], text)
+
+    for t in slices(text):
+        if matchhere(regexp, t):
+            return True
+        if t == "":
+            return False
+
+
+def matchhere(regexp: Regex, text: Text) -> bool:
+    """
+    matchhere reports whether regexp matches at beginning of text.
+    """
+    if regexp == "":
+        return True
+    elif regexp == "$":
+        return text == ""
+    elif len(regexp) >= 2 and regexp[1] == "*":
+        return matchstar(regexp[0], regexp[2:], text)
+    elif text != "" and (regexp[0] == "." or regexp[0] == text[0]):
+        return matchhere(regexp[1:], text[1:])
     else:
-        return zip_longest(a, b)
+        return False
 
 
-def eq(r: str, t: str) -> bool:
+def matchstar(c: Char, regexp: Regex, text: Text) -> bool:
     """
-    does a regex char match a text star?
+    matchstar reports whether c*regexp matches at beginning of text
     """
-    return (
-        (r == t)  # chars match
-        or (r is ".")  # wild card char
-        or ((r is "$") and (t is None))  # end anchor
-    )
-
-
-def suffixes(text: str) -> Generator[str, None, None]:
-    """
-    get all suffixes of a string
-    """
-    return (text[i:] for i in range(len(text)))
-
-
-def expand_star(regex: str, text: str) -> Generator[str, None, None]:
-    """
-    re-write a regex, replacing * with .'s
-    """
-    front, back = regex.split("*")
-    n = 2 + (len(text) - len(regex))
-    for i in range(n):
-        yield f"{front}{'.' * i}{back}"
-
-
-def match_here(regex: str, text: str) -> bool:
-    """
-    do all regex chars match a string at this location?
-    """
-    return all(eq(r, t) for r, t in zip_left(regex, text))
-
-
-def match(regex: str, text: str) -> bool:
-    if "*" in regex:
-        # expand a star, if there is one
-        return any(match(exp, text) for exp in expand_star(regex, text))
-    elif regex.startswith("^"):
-        # if it starts with an anchor, check if matches here
-        return match_here(regex[1:], text)
-    else:
-        # otherwise check all the suffixes
-        return any(match_here(regex, t) for t in suffixes(text))
+    for t in slices(text):
+        if matchhere(regexp, t):
+            return True
+        if t == "" or (t[0] != c and c != "."):
+            return False
 
 
 def test():
@@ -66,6 +60,4 @@ def test():
     assert match("^123$", "123")
     assert not match("123$", "1234")
     assert not match("1235", "123")
-    assert match("*34", "1234")
-    assert not match("13*", "1234")
     assert match("12*3", "1234")
